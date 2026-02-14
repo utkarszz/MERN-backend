@@ -1,5 +1,5 @@
-// Import Story model
 const Story = require('../models/Story');
+
 
 // ===============================
 // CREATE STORY (ADMIN ONLY)
@@ -8,19 +8,17 @@ const createStory = async (req, res) => {
   try {
     const { title, content, category, status } = req.body;
 
-    // Basic validation
     if (!title || !content || !category) {
       return res.status(400).json({
         message: 'Title, content and category are required'
       });
     }
 
-    // Create new story
     const story = await Story.create({
       title,
       content,
       category,
-      status // draft or published
+      status
     });
 
     res.status(201).json({
@@ -36,8 +34,9 @@ const createStory = async (req, res) => {
   }
 };
 
+
 // ===============================
-// GET ALL PUBLISHED STORIES (PUBLIC)
+// GET ALL PUBLISHED STORIES
 // ===============================
 const getAllStories = async (req, res) => {
   try {
@@ -45,12 +44,10 @@ const getAllStories = async (req, res) => {
 
     let query = { status: 'published' };
 
-    // Search by title
     if (search) {
       query.title = { $regex: search, $options: 'i' };
     }
 
-    // Filter by category
     if (category) {
       query.category = category;
     }
@@ -67,8 +64,9 @@ const getAllStories = async (req, res) => {
   }
 };
 
+
 // ===============================
-// GET SINGLE STORY BY SLUG (PUBLIC)
+// GET STORY BY SLUG (PUBLIC)
 // ===============================
 const getStoryBySlug = async (req, res) => {
   try {
@@ -85,7 +83,6 @@ const getStoryBySlug = async (req, res) => {
       });
     }
 
-    // Increment view count
     story.views += 1;
     await story.save();
 
@@ -99,8 +96,33 @@ const getStoryBySlug = async (req, res) => {
   }
 };
 
+
 // ===============================
-// UPDATE STORY (ADMIN ONLY)
+// GET STORY BY ID (ADMIN)
+// ===============================
+const getStoryById = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+
+    if (!story) {
+      return res.status(404).json({
+        message: 'Story not found'
+      });
+    }
+
+    res.status(200).json(story);
+
+  } catch (error) {
+    console.error('Get story by ID error:', error);
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+};
+
+
+// ===============================
+// UPDATE STORY (ADMIN)
 // ===============================
 const updateStory = async (req, res) => {
   try {
@@ -129,8 +151,9 @@ const updateStory = async (req, res) => {
   }
 };
 
+
 // ===============================
-// DELETE STORY (ADMIN ONLY)
+// DELETE STORY (ADMIN)
 // ===============================
 const deleteStory = async (req, res) => {
   try {
@@ -154,11 +177,12 @@ const deleteStory = async (req, res) => {
   }
 };
 
-// Export all controllers
+
 module.exports = {
   createStory,
   getAllStories,
   getStoryBySlug,
+  getStoryById,
   updateStory,
   deleteStory
 };
